@@ -129,7 +129,6 @@ export const register = async (req, res) => {
   try {
 
     const { email } = req.body;
-    const userId=req.user._id
 
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
@@ -137,7 +136,6 @@ export const register = async (req, res) => {
     }
     
     const user = await userModel.create(req.body);
-    const loginUser = await userModel.findById(userId);
     const userObj = user.toObject();
     delete userObj.password;
 

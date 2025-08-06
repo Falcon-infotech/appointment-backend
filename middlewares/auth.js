@@ -1,9 +1,8 @@
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
 import userModel from '../models/userModel.js';
 import bcrypt from 'bcrypt';
 
-dotenv.config();
+
 
 export const authenticate = async(req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
