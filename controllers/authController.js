@@ -4,8 +4,6 @@ import dotenv from 'dotenv';
 import requestIp from 'request-ip';
 import geoip from 'geoip-lite';
 import userModel from '../models/userModel.js';
-
-
 import refreshModel from '../models/refreshTokenModel.js';
 dotenv.config();
 
@@ -69,21 +67,9 @@ export const login = async (req, res) => {
       statusCode: 200,
       message: 'Login successful',
       accessToken,
-      // refreshToken,
-      //  token,
        user,
       });
-      // console.log("refreshToken at login",refreshToken)
 
-    // res.json({
-    //   success : true,  
-    //   statusCode: 200,
-    //   message: 'Login successful',
-    //   accessToken,
-    //   // refreshToken,
-    //   //  token,
-    //    user,
-    //    });
   } catch (err) {
     res.status(400).json({success : false,  statusCode: 400, error: err.message });
   }
