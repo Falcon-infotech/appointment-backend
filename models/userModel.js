@@ -43,10 +43,10 @@ const userSchema = new mongoose.Schema(
 
     // userId: { type: String, required: [false, "User ID is required"] },
 
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
+    // isDeleted: {
+    //   type: Boolean,
+    //   default: false,
+    // },
   },
   {
     timestamps: true,

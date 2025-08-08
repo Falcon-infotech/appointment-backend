@@ -7,6 +7,11 @@ import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import connectDB from "./config/dbConnection.js";
 import authRoutes from "./routes/authRoutes.js";
+import userRouter from "./routes/userRoutes.js";
+import branchRouter from "./routes/branchRoutes.js";
+import inspectorRouter from "./routes/inspectorRoutes.js";
+import courseRouter from "./routes/courseRoutes.js";
+import batchRouter from "./routes/batchRoutes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,16 +47,17 @@ app.options('/', cors({
 }));
 
 
-
 app.use("/api/auth", authRoutes);
+app.use("/api/user", userRouter);
+app.use("/api/branch", branchRouter);
+app.use("/api/inspector", inspectorRouter);
+app.use("/api/course", courseRouter);
+app.use("/api/batch", batchRouter);
 
 
 app.get("/", (req, res) => {
   res.send("HRMS Backend is running ");
 });
-
-
-
 
 
 const PORT = process.env.PORT || 5000;
