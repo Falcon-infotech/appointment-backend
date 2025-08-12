@@ -1,38 +1,91 @@
 import Inspector from '../models/inspectorModel.js';
 import Course from '../models/courseModel.js';
+import { syncRelation } from '../utils/relationSync.js';
+
 
 // ✅ Create Inspector
 export const createInspector = async (req, res) => {
   try {
-    let { name, email, phone, courseIds } = req.body;
+    const { name, email, phone, courseIds } = req.body;
 
-    if (!name || !email || !phone) {
-      return res.status(400).json({ success: false, message: "All fields (name, email, phone) are required" });
+    const existingInspector = await Inspector.findOne({ email: email.trim().toLowerCase() });
+    if (existingInspector) {
+      return res.status(409).json({
+        success: false,
+        message: "Inspector with this email already exists"
+      });
     }
 
-    // 🔄 If courseIds is missing or empty → get all courses
-    if (!courseIds || courseIds.length === 0) {
-      const allCourses = await Course.find({}, "_id");
-      courseIds = allCourses.map(c => c._id);
-    }
+    const finalCourseIds = courseIds?.length
+      ? courseIds
+      : (await Course.find({}, "_id")).map(c => c._id);
 
-    const newInspector = new Inspector({ name, email, phone,  courseIds });
-    await newInspector.save();
+    const inspector = await Inspector.create({
+      name,
+      email,
+      phone,
+      courseIds: finalCourseIds
+    });
 
-    const populatedInspector = await Inspector.findById(newInspector._id)
+    // ✅ Sync with courses
+    await syncRelation({
+      targetModel: Course,
+      sourceId: inspector._id,
+      targetField: "inspectorIds",
+      oldTargetIds: [],
+      newTargetIds: finalCourseIds
+    });
+
+    const populatedInspector = await Inspector.findById(inspector._id)
       .populate("courseIds", "name description duration");
 
-    res.status(201).json({ success: true, message: "Inspector created successfully", inspector: populatedInspector });
-
+    res.status(201).json({
+      success: true,
+      message: "Inspector created successfully",
+      inspector: populatedInspector
+    });
   } catch (err) {
     console.error("Create Inspector Error:", err);
-    if (err.name === 'ValidationError') {
-      return res.status(400).json({ success: false, message: Object.values(err.errors).map(e => e.message).join(", ") });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+
+export const updateInspector = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, phone, courseIds } = req.body;
+
+    const inspector = await Inspector.findById(id);
+    if (!inspector) {
+      return res.status(404).json({ success: false, message: "Inspector not found" });
     }
-    if (err.code === 11000 && err.keyValue?.email) {
-      return res.status(409).json({ success: false, message: "Email already exists" });
-    }
-    res.status(500).json({ success: false, message: "Something went wrong while creating inspector" });
+
+    const oldCourseIds = inspector.courseIds.map(c => c.toString());
+    let finalCourseIds = courseIds?.length ? courseIds : (await Course.find({}, "_id")).map(c => c._id);
+
+    inspector.name = name ?? inspector.name;
+    inspector.email = email ?? inspector.email;
+    inspector.phone = phone ?? inspector.phone;
+    inspector.courseIds = finalCourseIds;
+    await inspector.save();
+
+    // ✅ Sync courses
+    await syncRelation({
+      targetModel: courseModel,
+      sourceId: inspector._id,
+      targetField: "inspectorIds",
+      oldTargetIds: oldCourseIds,
+      newTargetIds: finalCourseIds
+    });
+
+    const populatedInspector = await Inspector.findById(inspector._id)
+      .populate("courseIds", "name description duration");
+
+    res.json({ success: true, message: "Inspector updated successfully", inspector: populatedInspector });
+  } catch (err) {
+    console.error("Update Inspector Error:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
@@ -56,7 +109,6 @@ export const getAllInspectors = async (req, res) => {
     });
   }
 };
-
 
 
 export const getInspectorById = async (req, res) => {
@@ -83,42 +135,6 @@ export const getInspectorById = async (req, res) => {
       success: false,
       message: "Failed to retrieve inspector",
     });
-  }
-};
-
-
-
-export const updateInspector = async (req, res) => {
-  try {
-    let { name, email, phone, courseIds } = req.body;
-
-    // 🔄 If no courseIds passed, fill with all courses
-    if (!courseIds || courseIds.length === 0) {
-      const allCourses = await Course.find({}, "_id");
-      courseIds = allCourses.map(c => c._id);
-    }
-
-    const updated = await Inspector.findByIdAndUpdate(
-      req.params.id,
-      { name, email, phone, courseIds },
-      { new: true, runValidators: true }
-    ).populate("courseIds", "name description duration"); // ✅ Populate course details
-
-    if (!updated) {
-      return res.status(404).json({ success: false, message: "Inspector not found" });
-    }
-
-    res.status(200).json({ success: true, message: "Inspector updated", inspector: updated });
-
-  } catch (err) {
-    console.error("Update Inspector Error:", err);
-    if (err.name === 'ValidationError') {
-      return res.status(400).json({ success: false, message: Object.values(err.errors).map(e => e.message).join(", ") });
-    }
-    if (err.code === 11000 && err.keyValue?.email) {
-      return res.status(409).json({ success: false, message: "Email already exists" });
-    }
-    res.status(500).json({ success: false, message: "Failed to update inspector" });
   }
 };
 

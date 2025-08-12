@@ -40,7 +40,7 @@ app.use(cors({
   credentials: true
 }));
 
-// This fixes the crash
+// This fixes the crash1
 app.options('/', cors({
   origin: allowedOrigins,
   credentials: true

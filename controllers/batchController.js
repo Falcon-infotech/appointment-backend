@@ -15,12 +15,12 @@ export const getAvailableInspectors = async (req, res) => {
     }
 
     // 1️⃣ Find all inspectors that have this course assigned
-    let inspectorQuery = { courses: courseId };
+    let inspectorQuery = { courseIds: courseId };
     if (branchId) {
       inspectorQuery.branchId = branchId; // optional branch filter
     }
 
-    const allInspectors = await Inspector.find(inspectorQuery);
+    const allInspectors = await Inspector.find(inspectorQuery,"_id name email");
 
     // 2️⃣ Find inspectors already booked in the date range
     const bookedInspectors = await Batch.find({
@@ -54,12 +54,12 @@ export const getAvailableInspectors = async (req, res) => {
 
 export const bookBatch = async (req, res) => {
   try {
-    const { branchId, courseId, inspectorId, fromDate, toDate } = req.body;
+    const { branchId, courseId, inspectorId, fromDate, toDate, code, name, scheduledBy } = req.body;
 
-    if (!courseId || !inspectorId || !fromDate || !toDate) {
+    if (!courseId || !inspectorId || !fromDate || !toDate || !code || !name || !scheduledBy) {
       return res.status(400).json({
         success: false,
-        message: "courseId, inspectorId, fromDate, toDate are required"
+        message: "courseId, inspectorId, fromDate, toDate, code, name, and scheduledBy are required"
       });
     }
 
@@ -86,7 +86,10 @@ export const bookBatch = async (req, res) => {
       courseId,
       inspectorId,
       fromDate,
-      toDate
+      toDate,
+      code,
+      name,
+      scheduledBy
     });
 
     await batch.save();
@@ -120,7 +123,7 @@ export const getBatchesByInspector = async (req, res) => {
 
     const batches = await Batch.find({ inspectorId })
       .populate('branchId', 'branchName country branchCode')
-      .populate('courseId', 'name description duration');
+      .populate('courseId', 'name description ');
 
     res.status(200).json({
       success: true,

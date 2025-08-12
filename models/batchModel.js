@@ -24,6 +24,22 @@ const batchSchema = new mongoose.Schema({
     type: Date,
     required: [true, 'To date is required']
   },
+    code: {
+    type: String,
+    required: [true, 'Batch code is required'],
+    trim: true
+  },
+  name: {
+    type: String,
+    required: [true, 'Batch name is required'],
+    trim: true
+  },
+  
+  scheduledBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // assuming scheduler is a user
+    required: [true, 'Scheduled by is required']
+  },
 //   status: {
 //     type: String,
 //     enum: ['Booked', 'Pending', 'Cancelled'],
