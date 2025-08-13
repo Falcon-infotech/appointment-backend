@@ -5,7 +5,7 @@ import { authenticate, isVerifiedPass } from '../middlewares/auth.js';
 const authRouter = express.Router();
 
 authRouter.post('/register',register);
-authRouter.post('/refreshToken',authenticate,refreshToken);
+authRouter.post('/refreshToken',refreshToken);
 authRouter.post('/login', isVerifiedPass, login);
 
 
