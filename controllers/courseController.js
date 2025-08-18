@@ -118,9 +118,9 @@ export const updateCourse = async (req, res) => {
 // ✅ Get All Courses (Populated)
 export const getAllCourses = async (req, res) => {
   try {
-    const courses = await Course.find()
-      .populate("branchIds", "branchName country branchCode")
-      .populate("inspectorIds", "name email phone");
+    const courses = await Course.find({}, "name description")
+      // .populate("branchIds", "branchName country branchCode")
+      // .populate("inspectorIds", "name email phone");
 
     res.status(200).json({ success: true, courses });
   } catch (err) {

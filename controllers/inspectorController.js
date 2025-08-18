@@ -92,8 +92,8 @@ export const updateInspector = async (req, res) => {
 
 export const getAllInspectors = async (req, res) => {
   try {
-    const inspectors = await Inspector.find()
-      .populate("courseIds", "name description duration"); // ✅ Populate courses for all
+    const inspectors = await Inspector.find({}, "name email phone")
+      // .populate("courseIds", "name description duration"); // ✅ Populate courses for all
 
     res.status(200).json({
       success: true,

@@ -14,15 +14,18 @@ export const getAvailableInspectors = async (req, res) => {
       });
     }
 
-    // 1️⃣ Find all inspectors that have this course assigned
+    // 1️⃣ Get inspectors for this course (and branch if given)
     let inspectorQuery = { courseIds: courseId };
     if (branchId) {
-      inspectorQuery.branchId = branchId; // optional branch filter
+      inspectorQuery.branchId = branchId;
     }
 
-    const allInspectors = await Inspector.find(inspectorQuery,"_id name email");
+    const allInspectors = await Inspector.find(
+      inspectorQuery,
+      "_id name email"
+    );
 
-    // 2️⃣ Find inspectors already booked in the date range
+    // 2️⃣ Get inspectors already booked (⚠️ courseId removed here)
     const bookedInspectors = await Batch.find({
       $or: [
         {
@@ -30,11 +33,14 @@ export const getAvailableInspectors = async (req, res) => {
           toDate: { $gte: new Date(fromDate) }
         }
       ]
-    }).distinct('inspectorId');
+    }).distinct("inspectorId");
 
-    // 3️⃣ Filter only available inspectors
+    // Convert to string for safe comparison
+    const bookedIds = bookedInspectors.map(id => id.toString());
+
+    // 3️⃣ Filter
     const availableInspectors = allInspectors.filter(
-      i => !bookedInspectors.includes(i._id.toString())
+      i => !bookedIds.includes(i._id.toString())
     );
 
     res.status(200).json({
@@ -52,6 +58,7 @@ export const getAvailableInspectors = async (req, res) => {
 };
 
 
+
 export const bookBatch = async (req, res) => {
   try {
     const { branchId, courseId, inspectorId, fromDate, toDate, code, name, scheduledBy } = req.body;
@@ -63,9 +70,11 @@ export const bookBatch = async (req, res) => {
       });
     }
 
-    // Check conflicts
+    // 1️⃣ Check conflicts (overlap)
     const conflict = await Batch.findOne({
       inspectorId,
+      ...(branchId && { branchId }), // optional branch filter
+      courseId,
       $or: [
         {
           fromDate: { $lte: new Date(toDate) },
@@ -81,8 +90,9 @@ export const bookBatch = async (req, res) => {
       });
     }
 
+    // 2️⃣ Create new batch
     const batch = new Batch({
-      branchId: branchId || null, // can be null if not provided
+      branchId: branchId || null,
       courseId,
       inspectorId,
       fromDate,
@@ -108,6 +118,7 @@ export const bookBatch = async (req, res) => {
     });
   }
 };
+
 
 
 export const getBatchesByInspector = async (req, res) => {

@@ -100,7 +100,7 @@ export const refreshToken =async (req, res) => {
       const newAccessToken = generateAccessToken(user);
       const newRefreshToken = generateRefreshToken(user);
       const updated = await refreshModel.findOneAndUpdate({ token }, { userId: user._id, token: newRefreshToken });
-      console.log('Updated refresh token record:', updated);
+      // console.log('Updated refresh token record:', updated);
           res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -117,7 +117,7 @@ export const refreshToken =async (req, res) => {
       });
 
       // const newAccessToken = generateAccessToken({ _id: user.id, role: user.role });
-      return res.status(200).json({ success: true, accessToken: newAccessToken });
+      // return res.status(200).json({ success: true, accessToken: newAccessToken });
     });
   } catch (error) {
     console.error("Error in refreshToken:", error.message);

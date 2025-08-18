@@ -93,7 +93,7 @@ export const updateBranch = async (req, res) => {
 // Get All Branches
 export const getAllBranches = async (req, res) => {
   try {
-    const branches = await branchModel.find();
+    const branches = await branchModel.find({}, "branchName country branchCode address");
     res.status(200).json({ success: true, message: "Branches fetched successfully", totalBranches: branches.length, branches });
   } catch (err) {
     console.error("Fetch Branches Error:", err.message);
@@ -104,7 +104,7 @@ export const getAllBranches = async (req, res) => {
 // Get Branch by ID
 export const getBranchById = async (req, res) => {
   try {
-    const branch = await branchModel.findById(req.params.id);
+    const branch = await branchModel.findById(req.params.id).populate("courseIds", "name description duration").populate("inspectorIds", "name email phone");
     if (!branch) return res.status(404).json({ success: false, message: "Branch not found" });
 
     res.status(200).json({ success: true, message: "Branch fetched successfully", branch });
