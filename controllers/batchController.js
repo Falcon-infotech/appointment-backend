@@ -2,7 +2,8 @@ import Batch from '../models/batchModel.js';
 import Inspector from '../models/inspectorModel.js';
 import Course from '../models/courseModel.js';
 
-// ✅ Get available inspectors for a course and date range
+
+
 export const getAvailableInspectors = async (req, res) => {
   try {
     const { branchId, courseId, fromDate, toDate } = req.body;
@@ -14,7 +15,6 @@ export const getAvailableInspectors = async (req, res) => {
       });
     }
 
-    // 1️⃣ Get inspectors for this course (and branch if given)
     let inspectorQuery = { courseIds: courseId };
     if (branchId) {
       inspectorQuery.branchId = branchId;
@@ -25,7 +25,7 @@ export const getAvailableInspectors = async (req, res) => {
       "_id name email"
     );
 
-    // 2️⃣ Get inspectors already booked (⚠️ courseId removed here)
+
     const bookedInspectors = await Batch.find({
       $or: [
         {
@@ -56,7 +56,6 @@ export const getAvailableInspectors = async (req, res) => {
     });
   }
 };
-
 
 
 export const bookBatch = async (req, res) => {

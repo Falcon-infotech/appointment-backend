@@ -1,6 +1,7 @@
 import Inspector from '../models/inspectorModel.js';
 import Course from '../models/courseModel.js';
 import { syncRelation } from '../utils/relationSync.js';
+import courseModel from '../models/courseModel.js';
 
 
 // ✅ Create Inspector
