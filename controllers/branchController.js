@@ -93,7 +93,7 @@ export const updateBranch = async (req, res) => {
 // Get All Branches
 export const getAllBranches = async (req, res) => {
   try {
-    const branches = await branchModel.find({}, "branchName country branchCode address");
+    const branches = await branchModel.find().populate("courseIds", "name description duration").populate("inspectorIds", "name email phone");
     res.status(200).json({ success: true, message: "Branches fetched successfully", totalBranches: branches.length, branches });
   } catch (err) {
     console.error("Fetch Branches Error:", err.message);

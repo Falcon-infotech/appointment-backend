@@ -174,3 +174,102 @@ export const getAllBatches = async (req, res) => {
   }
 };
 
+
+// ✅ Update Batch
+export const updateBatch = async (req, res) => {
+  try {
+    const { id } = req.params; // Batch Id
+    const { branchId, courseId, inspectorId, fromDate, toDate, code, name, scheduledBy } = req.body;
+
+    // Check if batch exists
+    const batch = await Batch.findById(id);
+    if (!batch) {
+      return res.status(404).json({
+        success: false,
+        message: "Batch not found"
+      });
+    }
+
+    // Optional conflict check (only if inspectorId or dates are updated)
+    if (inspectorId || fromDate || toDate) {
+      const conflict = await Batch.findOne({
+        _id: { $ne: id }, // exclude current batch
+        inspectorId: inspectorId || batch.inspectorId,
+        ...(branchId && { branchId }),
+        courseId: courseId || batch.courseId,
+        $or: [
+          {
+            fromDate: { $lte: new Date(toDate || batch.toDate) },
+            toDate: { $gte: new Date(fromDate || batch.fromDate) }
+          }
+        ]
+      });
+
+      if (conflict) {
+        return res.status(409).json({
+          success: false,
+          message: "Inspector already booked in this range"
+        });
+      }
+    }
+
+    // Update batch
+    const updatedBatch = await Batch.findByIdAndUpdate(
+      id,
+      {
+        branchId,
+        courseId,
+        inspectorId,
+        fromDate,
+        toDate,
+        code,
+        name,
+        scheduledBy
+      },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Batch updated successfully",
+      batch: updatedBatch
+    });
+
+  } catch (err) {
+    console.error("Update Batch Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update batch"
+    });
+  }
+};
+
+
+// ✅ Delete Batch
+export const deleteBatch = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await Batch.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Batch not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Batch deleted successfully"
+    });
+
+  } catch (err) {
+    console.error("Delete Batch Error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete batch"
+    });
+  }
+};
+
