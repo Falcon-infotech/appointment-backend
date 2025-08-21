@@ -11,6 +11,7 @@ const inspectorSchema= new mongoose.Schema({
         "Invalid international phone number",
       ],
     },
+  totalBatches: { type: Number, default: 0 },
   courseIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }]
 }, { timestamps: true });
 

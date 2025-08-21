@@ -104,7 +104,7 @@ export const getAllBranches = async (req, res) => {
 // Get Branch by ID
 export const getBranchById = async (req, res) => {
   try {
-    const branch = await branchModel.findById(req.params.id).populate("courseIds", "name description duration").populate("inspectorIds", "name email phone");
+    const branch = await branchModel.findById(req.params.id).populate("courseIds", "name description duration");
     if (!branch) return res.status(404).json({ success: false, message: "Branch not found" });
 
     res.status(200).json({ success: true, message: "Branch fetched successfully", branch });

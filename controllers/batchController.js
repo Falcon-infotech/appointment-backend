@@ -1,6 +1,7 @@
 import Batch from '../models/batchModel.js';
 import Inspector from '../models/inspectorModel.js';
 import Course from '../models/courseModel.js';
+import branchModel from '../models/branchModel.js';
 
 
 
@@ -72,7 +73,7 @@ export const bookBatch = async (req, res) => {
     // 1️⃣ Check conflicts (overlap)
     const conflict = await Batch.findOne({
       inspectorId,
-      ...(branchId && { branchId }), // optional branch filter
+      ...(branchId && { branchId }),
       courseId,
       $or: [
         {
@@ -103,6 +104,9 @@ export const bookBatch = async (req, res) => {
 
     await batch.save();
 
+    // 3️⃣ Increment inspector's totalBatches
+    await Inspector.findByIdAndUpdate(inspectorId, { $inc: { totalBatches: 1 } });
+
     res.status(201).json({
       success: true,
       message: "Batch booked successfully",
@@ -117,6 +121,7 @@ export const bookBatch = async (req, res) => {
     });
   }
 };
+
 
 
 
@@ -158,10 +163,28 @@ export const getAllBatches = async (req, res) => {
       .populate('courseId', 'name description duration')
       .populate('inspectorId', 'name email phone');
 
+    const totalInspectors = await Inspector.countDocuments();
+    const totalCourses = await Course.countDocuments();
+    const totalBranches = await branchModel.countDocuments();
+
+    if (!batches || batches.length === 0) {
+      return res.status(404).json({
+        success: false,
+        totalBatches: batches.length,
+        totalInspectors,
+        totalCourses,
+        totalBranches,
+        message: "No batches found"
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: "All batches fetched successfully",
       totalBatches: batches.length,
+      totalInspectors,
+      totalCourses,
+      totalBranches,
       batches
     });
 
@@ -259,6 +282,11 @@ export const deleteBatch = async (req, res) => {
       });
     }
 
+    // Decrement inspector's totalBatches
+    if (deleted.inspectorId) {
+      await Inspector.findByIdAndUpdate(deleted.inspectorId, { $inc: { totalBatches: -1 } });
+    }
+
     res.status(200).json({
       success: true,
       message: "Batch deleted successfully"
@@ -272,4 +300,5 @@ export const deleteBatch = async (req, res) => {
     });
   }
 };
+
 
