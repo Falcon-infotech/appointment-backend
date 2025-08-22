@@ -99,7 +99,7 @@ export const bookBatch = async (req, res) => {
       toDate,
       code,
       name,
-      scheduledBy
+      scheduledBy: req.user._id  
     });
 
     await batch.save();
@@ -121,7 +121,6 @@ export const bookBatch = async (req, res) => {
     });
   }
 };
-
 
 
 
@@ -161,7 +160,8 @@ export const getAllBatches = async (req, res) => {
     const batches = await Batch.find()
       .populate('branchId', 'branchName country branchCode')
       .populate('courseId', 'name description duration')
-      .populate('inspectorId', 'name email phone');
+      .populate('inspectorId', 'name email phone')
+      .populate('scheduledBy', 'first_name last_name email');
 
     const totalInspectors = await Inspector.countDocuments();
     const totalCourses = await Course.countDocuments();
