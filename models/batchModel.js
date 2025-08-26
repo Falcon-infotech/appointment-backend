@@ -40,11 +40,11 @@ const batchSchema = new mongoose.Schema({
     ref: 'User', // assuming scheduler is a user
     required: [true, 'Scheduled by is required']
   },
-//   status: {
-//     type: String,
-//     enum: ['Booked', 'Pending', 'Cancelled'],
-//     default: 'Booked'
-//   }
+  status: {
+    type: String,
+    enum: ['Up Coming', 'On Going', 'Completed'],
+    default: 'Up Coming'
+  }
 }, {
   timestamps: true
 });
