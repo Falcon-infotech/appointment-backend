@@ -5,9 +5,6 @@ import branchModel from "../models/branchModel.js";
 import { updateBatchStatus } from "../utils/commonUtils.js";
 import mongoose from "mongoose";
 
-
-
-
 export const getAvailableInstructors = async (req, res) => {
   try {
     const { branchId, courseId, fromDate, toDate } = req.body;
@@ -36,7 +33,10 @@ export const getAvailableInstructors = async (req, res) => {
     // }
 
     // ✅ Get only available instructors
-    const availableInstructors = await instructor.find(instructorQuery, "_id name email");
+    const availableInstructors = await instructor.find(
+      instructorQuery,
+      "_id name email"
+    );
 
     res.status(200).json({
       success: true,
@@ -51,28 +51,12 @@ export const getAvailableInstructors = async (req, res) => {
   }
 };
 
-
-
 export const bookBatch = async (req, res) => {
   try {
-    const {
-      branchId,
-      courseId,
-      instructorId,
-      fromDate,
-      toDate,
-      code,
-      name,
-    } = req.body;
+    const { branchId, courseId, instructorId, fromDate, toDate, code, name } =
+      req.body;
 
-    if (
-      !courseId ||
-      !instructorId ||
-      !fromDate ||
-      !toDate ||
-      !code ||
-      !name 
-    ) {
+    if (!courseId || !instructorId || !fromDate || !toDate || !code || !name) {
       return res.status(400).json({
         success: false,
         message:
@@ -83,7 +67,7 @@ export const bookBatch = async (req, res) => {
     // 1️⃣ Check conflicts (overlap)
     const conflict = await Batch.findOne({
       instructorId,
-      ...(branchId && { branchId }),
+      // ...(branchId && { branchId }),
       courseId,
       $or: [
         {
@@ -214,7 +198,6 @@ export const getAllBatches = async (req, res) => {
   }
 };
 
-
 // ✅ Update Batch
 export const updateBatch = async (req, res) => {
   try {
@@ -325,7 +308,3 @@ export const deleteBatch = async (req, res) => {
     });
   }
 };
-
-
-
-
