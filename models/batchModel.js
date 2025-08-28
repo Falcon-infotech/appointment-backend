@@ -13,8 +13,8 @@ const batchSchema = new mongoose.Schema({
   },
   instructorId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'instructor',
-    required: [true, 'instructor is required']
+    ref: 'Instructor',
+    required: [true, 'Instructor is required']
   },
   fromDate: {
     type: Date,

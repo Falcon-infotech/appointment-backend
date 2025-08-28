@@ -1,9 +1,10 @@
 import Batch from "../models/batchModel.js";
-import instructor from "../models/instructorModel.js";
-import Course from "../models/courseModel.js";
 import branchModel from "../models/branchModel.js";
 import { updateBatchStatus } from "../utils/commonUtils.js";
 import mongoose from "mongoose";
+import courseModel from "../models/courseModel.js";
+import instructorModel from "../models/instructorModel.js";
+
 
 export const getAvailableInstructors = async (req, res) => {
   try {
@@ -159,15 +160,15 @@ export const getAllBatches = async (req, res) => {
       .populate("instructorId", "name email phone")
       .populate("scheduledBy", "first_name last_name email");
 
-    const totalinstructors = await instructor.countDocuments();
-    const totalCourses = await Course.countDocuments();
+    const totalInstructors = await instructorModel.countDocuments();
+    const totalCourses = await courseModel.countDocuments();
     const totalBranches = await branchModel.countDocuments();
 
     if (!batches || batches.length === 0) {
       return res.status(404).json({
         success: false,
         totalBatches: 0,
-        totalinstructors,
+        totalInstructors,
         totalCourses,
         totalBranches,
         message: "No batches found",
@@ -184,7 +185,7 @@ export const getAllBatches = async (req, res) => {
       success: true,
       message: "All batches fetched and statuses updated successfully",
       totalBatches: updatedBatches.length,
-      totalinstructors,
+      totalInstructors,
       totalCourses,
       totalBranches,
       batches: updatedBatches,
