@@ -34,7 +34,7 @@ export const getAvailableInstructors = async (req, res) => {
     // }
 
     // ✅ Get only available instructors
-    const availableInstructors = await instructor.find(
+    const availableInstructors = await instructorModel.find(
       instructorQuery,
       "_id name email"
     );
@@ -292,7 +292,7 @@ export const deleteBatch = async (req, res) => {
 
     // Decrement instructor's totalBatches
     if (deleted.instructorId) {
-      await instructor.findByIdAndUpdate(deleted.instructorId, {
+      await instructorModel.findByIdAndUpdate(deleted.instructorId, {
         $inc: { totalBatches: -1 },
       });
     }
