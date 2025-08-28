@@ -3,6 +3,10 @@ import Inspector from "../models/inspectorModel.js";
 import Course from "../models/courseModel.js";
 import branchModel from "../models/branchModel.js";
 import { updateBatchStatus } from "../utils/commonUtils.js";
+import mongoose from "mongoose";
+
+
+
 
 export const getAvailableInspectors = async (req, res) => {
   try {
@@ -15,32 +19,24 @@ export const getAvailableInspectors = async (req, res) => {
       });
     }
 
-    let inspectorQuery = { courseIds: courseId };
-    if (branchId) {
-      inspectorQuery.branchId = branchId;
-    }
-
-    const allInspectors = await Inspector.find(
-      inspectorQuery,
-      "_id name email"
-    );
-
-    const bookedInspectors = await Batch.find({
-      $or: [
-        {
-          fromDate: { $lte: new Date(toDate) },
-          toDate: { $gte: new Date(fromDate) },
-        },
-      ],
+    // ✅ Find booked inspector IDs within date range
+    const bookedInspectorIds = await Batch.find({
+      fromDate: { $lte: new Date(toDate) },
+      toDate: { $gte: new Date(fromDate) },
     }).distinct("inspectorId");
 
-    // Convert to string for safe comparison
-    const bookedIds = bookedInspectors.map((id) => id.toString());
+    // ✅ Build query
+    let inspectorQuery = {
+      courseIds: new mongoose.Types.ObjectId(courseId),
+      _id: { $nin: bookedInspectorIds },
+    };
 
-    // 3️⃣ Filter
-    const availableInspectors = allInspectors.filter(
-      (i) => !bookedIds.includes(i._id.toString())
-    );
+    // if (branchId) {
+    //   inspectorQuery.branchIds = new mongoose.Types.ObjectId(branchId);
+    // }
+
+    // ✅ Get only available inspectors
+    const availableInspectors = await Inspector.find(inspectorQuery, "_id name email");
 
     res.status(200).json({
       success: true,
@@ -54,6 +50,8 @@ export const getAvailableInspectors = async (req, res) => {
     });
   }
 };
+
+
 
 export const bookBatch = async (req, res) => {
   try {

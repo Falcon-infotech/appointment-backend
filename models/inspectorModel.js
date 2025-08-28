@@ -12,7 +12,8 @@ const inspectorSchema= new mongoose.Schema({
       ],
     },
   totalBatches: { type: Number, default: 0 },
-  courseIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }]
+  courseIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+  branchIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Branch" }],
 }, { timestamps: true });
 
 const inspectorModel = mongoose.model('Inspector', inspectorSchema);
