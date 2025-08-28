@@ -100,7 +100,7 @@ export const bookBatch = async (req, res) => {
     await batch.save();
 
     // 3️⃣ Increment instructor's totalBatches
-    await instructor.findByIdAndUpdate(instructorId, {
+    await instructorModel.findByIdAndUpdate(instructorId, {
       $inc: { totalBatches: 1 },
     });
 
