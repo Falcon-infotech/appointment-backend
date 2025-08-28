@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const inspectorSchema= new mongoose.Schema({
+const instructorSchema= new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   phone: {
@@ -16,6 +16,6 @@ const inspectorSchema= new mongoose.Schema({
   branchIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Branch" }],
 }, { timestamps: true });
 
-const inspectorModel = mongoose.model('Inspector', inspectorSchema);
+const instructorModel = mongoose.model('Instructor', instructorSchema);
 
-export default inspectorModel;
+export default instructorModel;

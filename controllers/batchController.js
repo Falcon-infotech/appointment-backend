@@ -1,5 +1,5 @@
 import Batch from "../models/batchModel.js";
-import Inspector from "../models/inspectorModel.js";
+import instructor from "../models/instructorModel.js";
 import Course from "../models/courseModel.js";
 import branchModel from "../models/branchModel.js";
 import { updateBatchStatus } from "../utils/commonUtils.js";
@@ -8,7 +8,7 @@ import mongoose from "mongoose";
 
 
 
-export const getAvailableInspectors = async (req, res) => {
+export const getAvailableInstructors = async (req, res) => {
   try {
     const { branchId, courseId, fromDate, toDate } = req.body;
 
@@ -19,31 +19,31 @@ export const getAvailableInspectors = async (req, res) => {
       });
     }
 
-    // ✅ Find booked inspector IDs within date range
-    const bookedInspectorIds = await Batch.find({
+    // ✅ Find booked instructor IDs within date range
+    const bookedInstructorIds = await Batch.find({
       fromDate: { $lte: new Date(toDate) },
       toDate: { $gte: new Date(fromDate) },
-    }).distinct("inspectorId");
+    }).distinct("instructorId");
 
     // ✅ Build query
-    let inspectorQuery = {
+    let instructorQuery = {
       courseIds: new mongoose.Types.ObjectId(courseId),
-      _id: { $nin: bookedInspectorIds },
+      _id: { $nin: bookedInstructorIds },
     };
 
     // if (branchId) {
-    //   inspectorQuery.branchIds = new mongoose.Types.ObjectId(branchId);
+    //   instructorQuery.branchIds = new mongoose.Types.ObjectId(branchId);
     // }
 
-    // ✅ Get only available inspectors
-    const availableInspectors = await Inspector.find(inspectorQuery, "_id name email");
+    // ✅ Get only available instructors
+    const availableInstructors = await instructor.find(instructorQuery, "_id name email");
 
     res.status(200).json({
       success: true,
-      availableInspectors,
+      availableInstructors,
     });
   } catch (err) {
-    console.error("Inspector availability check failed:", err);
+    console.error("instructor availability check failed:", err);
     res.status(500).json({
       success: false,
       message: "Server error",
@@ -58,33 +58,31 @@ export const bookBatch = async (req, res) => {
     const {
       branchId,
       courseId,
-      inspectorId,
+      instructorId,
       fromDate,
       toDate,
       code,
       name,
-      scheduledBy,
     } = req.body;
 
     if (
       !courseId ||
-      !inspectorId ||
+      !instructorId ||
       !fromDate ||
       !toDate ||
       !code ||
-      !name ||
-      !scheduledBy
+      !name 
     ) {
       return res.status(400).json({
         success: false,
         message:
-          "courseId, inspectorId, fromDate, toDate, code, name, and scheduledBy are required",
+          "courseId, instructorId, fromDate, toDate, code, and name are required",
       });
     }
 
     // 1️⃣ Check conflicts (overlap)
     const conflict = await Batch.findOne({
-      inspectorId,
+      instructorId,
       ...(branchId && { branchId }),
       courseId,
       $or: [
@@ -98,7 +96,7 @@ export const bookBatch = async (req, res) => {
     if (conflict) {
       return res.status(409).json({
         success: false,
-        message: "Inspector already booked in this range",
+        message: "instructor already booked in this range",
       });
     }
 
@@ -106,7 +104,7 @@ export const bookBatch = async (req, res) => {
     const batch = new Batch({
       branchId: branchId || null,
       courseId,
-      inspectorId,
+      instructorId,
       fromDate,
       toDate,
       code,
@@ -116,8 +114,8 @@ export const bookBatch = async (req, res) => {
 
     await batch.save();
 
-    // 3️⃣ Increment inspector's totalBatches
-    await Inspector.findByIdAndUpdate(inspectorId, {
+    // 3️⃣ Increment instructor's totalBatches
+    await instructor.findByIdAndUpdate(instructorId, {
       $inc: { totalBatches: 1 },
     });
 
@@ -135,17 +133,17 @@ export const bookBatch = async (req, res) => {
   }
 };
 
-export const getBatchesByInspector = async (req, res) => {
+export const getBatchesByInstructor = async (req, res) => {
   try {
-    const { inspectorId } = req.params;
-    if (!inspectorId) {
+    const { instructorId } = req.params;
+    if (!instructorId) {
       return res.status(400).json({
         success: false,
-        message: "Inspector ID is required",
+        message: "instructor ID is required",
       });
     }
 
-    const batches = await Batch.find({ inspectorId })
+    const batches = await Batch.find({ instructorId })
       .populate("branchId", "branchName country branchCode")
       .populate("courseId", "name description");
 
@@ -174,10 +172,10 @@ export const getAllBatches = async (req, res) => {
     const batches = await Batch.find()
       .populate("branchId", "branchName country branchCode")
       .populate("courseId", "name description duration")
-      .populate("inspectorId", "name email phone")
+      .populate("instructorId", "name email phone")
       .populate("scheduledBy", "first_name last_name email");
 
-    const totalInspectors = await Inspector.countDocuments();
+    const totalinstructors = await instructor.countDocuments();
     const totalCourses = await Course.countDocuments();
     const totalBranches = await branchModel.countDocuments();
 
@@ -185,7 +183,7 @@ export const getAllBatches = async (req, res) => {
       return res.status(404).json({
         success: false,
         totalBatches: 0,
-        totalInspectors,
+        totalinstructors,
         totalCourses,
         totalBranches,
         message: "No batches found",
@@ -202,7 +200,7 @@ export const getAllBatches = async (req, res) => {
       success: true,
       message: "All batches fetched and statuses updated successfully",
       totalBatches: updatedBatches.length,
-      totalInspectors,
+      totalinstructors,
       totalCourses,
       totalBranches,
       batches: updatedBatches,
@@ -224,7 +222,7 @@ export const updateBatch = async (req, res) => {
     const {
       branchId,
       courseId,
-      inspectorId,
+      instructorId,
       fromDate,
       toDate,
       code,
@@ -241,11 +239,11 @@ export const updateBatch = async (req, res) => {
       });
     }
 
-    // Optional conflict check (only if inspectorId or dates are updated)
-    if (inspectorId || fromDate || toDate) {
+    // Optional conflict check (only if instructorId or dates are updated)
+    if (instructorId || fromDate || toDate) {
       const conflict = await Batch.findOne({
         _id: { $ne: id }, // exclude current batch
-        inspectorId: inspectorId || batch.inspectorId,
+        instructorId: instructorId || batch.instructorId,
         ...(branchId && { branchId }),
         courseId: courseId || batch.courseId,
         $or: [
@@ -259,7 +257,7 @@ export const updateBatch = async (req, res) => {
       if (conflict) {
         return res.status(409).json({
           success: false,
-          message: "Inspector already booked in this range",
+          message: "instructor already booked in this range",
         });
       }
     }
@@ -270,7 +268,7 @@ export const updateBatch = async (req, res) => {
       {
         branchId,
         courseId,
-        inspectorId,
+        instructorId,
         fromDate,
         toDate,
         code,
@@ -308,9 +306,9 @@ export const deleteBatch = async (req, res) => {
       });
     }
 
-    // Decrement inspector's totalBatches
-    if (deleted.inspectorId) {
-      await Inspector.findByIdAndUpdate(deleted.inspectorId, {
+    // Decrement instructor's totalBatches
+    if (deleted.instructorId) {
+      await instructor.findByIdAndUpdate(deleted.instructorId, {
         $inc: { totalBatches: -1 },
       });
     }
@@ -327,3 +325,7 @@ export const deleteBatch = async (req, res) => {
     });
   }
 };
+
+
+
+

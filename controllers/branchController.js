@@ -8,7 +8,6 @@ export const createBranch = async (req, res) => {
   try {
     const { branchName, country, branchCode, address, courseIds } = req.body;
 
-    // Default: agar courseIds nahi diye to saare courses assign
     const finalCourseIds = courseIds?.length
       ? courseIds
       : (await courseModel.find({}, "_id")).map(c => c._id);
@@ -27,7 +26,7 @@ export const createBranch = async (req, res) => {
       targetModel: courseModel,
       sourceId: branch._id,
       targetField: "branchIds",
-      oldTargetIds: [], // create me purane IDs nahi hote
+      oldTargetIds: [], 
       newTargetIds: finalCourseIds
     });
 

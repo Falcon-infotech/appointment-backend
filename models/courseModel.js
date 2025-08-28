@@ -5,7 +5,7 @@ const courseSchema = new mongoose.Schema({
     description: { type: String, required: true },
     duration: { type: Number, required: false }, // in days
     branchIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Branch" }],
-    inspectorIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Inspector" }]
+    instructorIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Instructor" }]
 });
 
 const courseModel = mongoose.model('Course', courseSchema);

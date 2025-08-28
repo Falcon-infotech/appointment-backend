@@ -2,28 +2,28 @@ import mongoose from "mongoose";
 import Branch from "../models/branchModel.js";
 import Course from "../models/courseModel.js";
 import branchModel from "../models/branchModel.js";
-import inspectorModel from "../models/inspectorModel.js";
+import instructorModel from "../models/instructorModel.js";
 import { syncRelation } from "../utils/relationSync.js";
 
 // ✅ Create Course
 export const createCourse = async (req, res) => {
   try {
-    const { name, description, duration, branchIds, inspectorIds } = req.body;
+    const { name, description, duration, branchIds, instructorIds } = req.body;
 
     const finalBranchIds = branchIds?.length
       ? branchIds
       : (await branchModel.find({}, "_id")).map(b => b._id);
 
-    const finalInspectorIds = inspectorIds?.length
-      ? inspectorIds
-      : (await inspectorModel.find({}, "_id")).map(i => i._id);
+    const finalInstructorIds = instructorIds?.length
+      ? instructorIds
+      : (await instructorModel.find({}, "_id")).map(i => i._id);
 
     const course = await Course.create({
       name,
       description,
       duration,
       branchIds: finalBranchIds,
-      inspectorIds: finalInspectorIds
+      instructorIds: finalInstructorIds
     });
 
     // ✅ Sync with branches
@@ -35,18 +35,18 @@ export const createCourse = async (req, res) => {
       newTargetIds: finalBranchIds
     });
 
-    // ✅ Sync with inspectors
+    // ✅ Sync with instructors
     await syncRelation({
-      targetModel: inspectorModel,
+      targetModel: instructorModel,
       sourceId: course._id,
       targetField: "courseIds",
       oldTargetIds: [],
-      newTargetIds: finalInspectorIds
+      newTargetIds: finalInstructorIds
     });
 
     const populatedCourse = await Course.findById(course._id)
       .populate("branchIds", "branchName country branchCode")
-      .populate("inspectorIds", "name email phone");
+      .populate("instructorIds", "name email phone");
 
     res.status(201).json({
       success: true,
@@ -64,7 +64,7 @@ export const createCourse = async (req, res) => {
 export const updateCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, duration, branchIds, inspectorIds } = req.body;
+    const { name, description, duration, branchIds, instructorIds } = req.body;
 
     const course = await Course.findById(id);
     if (!course) {
@@ -72,16 +72,16 @@ export const updateCourse = async (req, res) => {
     }
 
     const oldBranchIds = course.branchIds.map(b => b.toString());
-    const oldInspectorIds = course.inspectorIds.map(i => i.toString());
+    const oldInstructorIds = course.instructorIds.map(i => i.toString());
 
     let finalBranchIds = branchIds?.length ? branchIds : (await branchModel.find({}, "_id")).map(b => b._id);
-    let finalInspectorIds = inspectorIds?.length ? inspectorIds : (await inspectorModel.find({}, "_id")).map(i => i._id);
+    let finalInstructorIds = instructorIds?.length ? instructorIds : (await instructorModel.find({}, "_id")).map(i => i._id);
 
     course.name = name ?? course.name;
     course.description = description ?? course.description;
     course.duration = duration ?? course.duration;
     course.branchIds = finalBranchIds;
-    course.inspectorIds = finalInspectorIds;
+    course.instructorIds = finalInstructorIds;
     await course.save();
 
     // ✅ Sync branches
@@ -93,18 +93,18 @@ export const updateCourse = async (req, res) => {
       newTargetIds: finalBranchIds
     });
 
-    // ✅ Sync inspectors
+    // ✅ Sync instructors
     await syncRelation({
-      targetModel: inspectorModel,
+      targetModel: instructorModel,
       sourceId: course._id,
       targetField: "courseIds",
-      oldTargetIds: oldInspectorIds,
-      newTargetIds: finalInspectorIds
+      oldTargetIds: oldInstructorIds,
+      newTargetIds: finalInstructorIds
     });
 
     const populatedCourse = await Course.findById(course._id)
       .populate("branchIds", "branchName country branchCode")
-      .populate("inspectorIds", "name email phone");
+      .populate("instructorIds", "name email phone");
 
     res.json({ success: true, message: "Course updated successfully", course: populatedCourse });
   } catch (err) {
@@ -120,7 +120,7 @@ export const getAllCourses = async (req, res) => {
   try {
     const courses = await Course.find({}, "name description")
       .populate("branchIds", "branchName country branchCode")
-      .populate("inspectorIds", "name email phone");
+      .populate("instructorIds", "name email phone");
 
     res.status(200).json({ success: true, courses });
   } catch (err) {
@@ -134,7 +134,7 @@ export const getCourseById = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id)
       .populate("branchIds", "branchName country branchCode")
-      .populate("inspectorIds", "name email phone");
+      .populate("instructorIds", "name email phone");
 
     if (!course) {
       return res.status(404).json({
@@ -167,7 +167,7 @@ export const getCoursesByBranch = async (req, res) => {
 
     const courses = await Course.find({ _id: { $in: branch.courseIds } },'_id name description')
       // .populate("branchIds", "branchName country branchCode")
-      // .populate("inspectorIds", "name");
+      // .populate("instructorIds", "name");
 
     res.status(200).json({
       success: true,
