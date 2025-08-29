@@ -1,12 +1,13 @@
 import express from 'express';
-import { getAllBatchesByInstructor, getInstructorBatches, getInstructorReport } from '../controllers/reportController.js';
+import { getSingleInstructorAllBatches, getInstructorBatches, getInstructorReport } from '../controllers/reportController.js';
+import { authenticate } from '../middlewares/auth.js';
 
 const reportRouter = express.Router();
-
+reportRouter.use(authenticate);
 
 reportRouter.post("/instructor_report", getInstructorReport);
 reportRouter.post("/instructor_batches/:instructorId", getInstructorBatches);
-reportRouter.post("/single_instructor_batches/:instructorId", getAllBatchesByInstructor);
+// reportRouter.get("/single_instructor_batches/:instructorId", getSingleInstructorAllBatches);
 
 
 export default reportRouter;

@@ -4,6 +4,7 @@ import { updateBatchStatus } from "../utils/commonUtils.js";
 import mongoose from "mongoose";
 import courseModel from "../models/courseModel.js";
 import instructorModel from "../models/instructorModel.js";
+import batchModel from "../models/batchModel.js";
 
 
 export const getAvailableInstructors = async (req, res) => {
@@ -195,6 +196,37 @@ export const getAllBatches = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch all batches",
+    });
+  }
+};
+
+
+export const getMyAllBatches = async (req, res) => {
+  try {
+    const instructorId = req.user?._id; // Logged-in user's ID
+
+    if (!instructorId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Instructor not found",
+      });
+    }
+
+    const batches = await batchModel.find({ instructorId })
+      .populate("branchId", "branchName country branchCode")
+      .populate("courseId", "name description")
+      .sort({ fromDate: -1 }); // latest first
+
+    res.status(200).json({
+      success: true,
+      totalBatches: batches.length,
+      batches,
+    });
+  } catch (err) {
+    console.error("Fetching logged-in instructor batches failed:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
     });
   }
 };

@@ -2,7 +2,7 @@ import batchModel from "../models/batchModel.js";
 
 
 
-
+// all instructor batches report by dates
 export const getInstructorReport = async (req, res) => {
   try {
     const { fromDate, toDate } = req.body;
@@ -74,6 +74,7 @@ export const getInstructorReport = async (req, res) => {
   }
 };
 
+// all batches till now
 export const getInstructorBatches = async (req, res) => {
   try {
     const { fromDate, toDate } = req.body;
@@ -108,7 +109,7 @@ export const getInstructorBatches = async (req, res) => {
   }
 };
 
-export const getAllBatchesByInstructor = async (req, res) => {
+export const getSingleInstructorAllBatches = async (req, res) => {
   try {
     const { instructorId } = req.params;
 
@@ -119,7 +120,7 @@ export const getAllBatchesByInstructor = async (req, res) => {
       });
     }
 
-    const batches = await Batch.find({ instructorId })
+    const batches = await batchModel.find({ instructorId })
       .populate("branchId", "branchName country branchCode")
       .populate("courseId", "name description")
       .sort({ fromDate: -1 }); // latest first
@@ -137,4 +138,6 @@ export const getAllBatchesByInstructor = async (req, res) => {
     });
   }
 };
+
+
 
