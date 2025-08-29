@@ -9,7 +9,7 @@ batchRouter.use(authenticate);
 batchRouter.post('/available_instructors', getAvailableInstructors);
 batchRouter.post('/bookBatch', bookBatch);
 batchRouter.get('/all', getAllBatches);
-batchRouter.get("/my_batches", getMyAllBatches);
+// batchRouter.get("/my_batches", getMyAllBatches);
 batchRouter.get('/:instructorId', getBatchesByInstructor);
 batchRouter.put('/:id', updateBatch);
 batchRouter.delete('/:id', deleteBatch);

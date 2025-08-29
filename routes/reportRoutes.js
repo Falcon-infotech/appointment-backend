@@ -7,7 +7,7 @@ reportRouter.use(authenticate);
 
 reportRouter.post("/instructor_report", getInstructorReport);
 reportRouter.post("/instructor_batches/:instructorId", getInstructorBatches);
-// reportRouter.get("/single_instructor_batches/:instructorId", getSingleInstructorAllBatches);
+reportRouter.get("/single_instructor_batches/:instructorId", getSingleInstructorAllBatches);
 
 
 export default reportRouter;
