@@ -62,7 +62,7 @@ app.use("/api/batch", batchRouter);
 app.use("/api/report", reportRouter);
 
 app.get("/", (req, res) => {
-  res.send("HRMS Backend is running ");
+  res.send("Training Management System Backend is running ");
 });
 
 const PORT = process.env.PORT || 5000;
