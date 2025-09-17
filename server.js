@@ -56,7 +56,7 @@ app.use("/api/batch", batchRouter);
 
 
 app.get("/", (req, res) => {
-  res.send("HRMS Backend is running ");
+  res.send("Training Management System Backend is running ");
 });
 
 
