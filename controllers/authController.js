@@ -8,6 +8,8 @@ import refreshModel from '../models/refreshTokenModel.js';
 dotenv.config();
 
 
+
+
 const generateAccessToken = (user) => {
   return jwt.sign(
     { _id: user._id, role: user.role, email: user.email,isDeleted: user.isDeleted },
