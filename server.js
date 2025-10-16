@@ -70,8 +70,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   connectDB();
-<<<<<<< HEAD
-=======
-
->>>>>>> a2ecaf682e0faee968cb96ea6f574ab1dde856f6
 });
