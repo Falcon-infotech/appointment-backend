@@ -27,6 +27,7 @@ app.use(cookieParser());
 const allowedOrigins = [
   "http://localhost:5173",
   "https://appointment-frontend-gold-two.vercel.app",
+  "https://appointment-frontend-dev.onrender.com",
 ];
 
 app.use(
